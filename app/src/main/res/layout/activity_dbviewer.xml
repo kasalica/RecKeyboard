@@ -5,7 +5,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
+    android:padding="20dp"
+    tools:context=".activities.DBViewerActivity">
 
     <TextView
         android:id="@+id/desc"
@@ -16,7 +17,9 @@
         android:textColor="@color/color_red"
         android:layout_margin="10dp"
         android:textAlignment="center"
-        android:text="TEMP DATABASE" />
+        android:text="DATABASE" />
+
+
 
     <EditText
         android:id="@+id/etUserMessage"
@@ -28,22 +31,39 @@
         android:imeOptions="actionDone"
         />
 
-    <Button
-        android:id="@+id/btnDeleteTempDB"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:text="Delete data from DB"
-        android:textColor="@color/color_white"
-        android:background="@drawable/custom_button"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="5dp"
+        >
+        <Button
+            android:id="@+id/btnDeleteDB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:text="Delete data from DB"
+            android:textColor="@color/color_white"
+            android:background="@drawable/custom_button"/>
+        <Button
+            android:id="@+id/btnTempDB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:text="Temp DB"
+            android:textColor="@color/color_white"
+            android:background="@drawable/custom_button"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         >
 
         <Button
@@ -58,6 +78,7 @@
 
         <Button
             android:id="@+id/btnRead2"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
@@ -76,6 +97,7 @@
             android:textColor="@color/color_white"
             android:background="@drawable/custom_button"/>
     </LinearLayout>
+
 
     <LinearLayout
 

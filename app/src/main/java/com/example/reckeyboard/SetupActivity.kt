@@ -37,12 +37,13 @@ class SetupActivity : AppCompatActivity() {
                 val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)
 
-                Toast.makeText(applicationContext, "RecKeyboard is enabled!", Toast.LENGTH_LONG)
+                Toast.makeText(applicationContext, "RecKeyboard is NOT enabled!", Toast.LENGTH_LONG)
                     .show()
             }
+            else Toast.makeText(applicationContext, "RecKeyboard is enabled!", Toast.LENGTH_LONG)
+                .show()
         }
-        Toast.makeText(applicationContext, "RecKeyboard is NOT enabled!", Toast.LENGTH_LONG)
-            .show()
+
     }
 
     fun restartActivity() {

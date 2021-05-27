@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import com.example.reckeyboard.Database.Row
 import com.example.reckeyboard.Database.Row2
 import com.example.reckeyboard.Database.Row3
@@ -19,11 +20,13 @@ val TEMPTABLE1_NAME = "TempCHAR"
 val TEMPTABLE2_NAME = "TempTIME"
 val TEMPTABLE3_NAME = "TempACCURACY"
 val COL_ID = "id"
-val COL_CHAR = "string"
+val COL_KEY = "key"
+val COL_KEYS = "keys"
 val COL_C = "count"
 val COL_TIME = "time"
-val COL_X = "coorx"
-val COL_Y = "coory"
+val COL_HOLD_TIME = "hold_time"
+val COL_X = "coor_x"
+val COL_Y = "coor_y"
 
 class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.CursorFactory?, version: Int) : SQLiteOpenHelper(context,
     DATABASE_NAME, factory,
@@ -39,36 +42,38 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
 
         val createTable1 = "CREATE TABLE " + TABLE1_NAME + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                COL_CHAR + " VARCHAR(256)," +
+                COL_KEY + " VARCHAR(256)," +
+                COL_HOLD_TIME + " INTEGER," +
                 COL_C + " INTEGER)"
 
         val createTable2 = "CREATE TABLE " + TABLE2_NAME + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                COL_CHAR + " VARCHAR(256)," +
+                COL_KEYS + " VARCHAR(256)," +
                 COL_TIME + " INTEGER," +
                 COL_C + " INTEGER)"
 
         val createTable3 = "CREATE TABLE " + TABLE3_NAME + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                COL_CHAR + " VARCHAR(256)," +
+                COL_KEY + " VARCHAR(256)," +
                 COL_X + " REAL," +
                 COL_Y + " REAL," +
                 COL_C + " INTEGER)"
 
         val createTempTable1 = "CREATE TABLE " + TEMPTABLE1_NAME + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                COL_CHAR + " VARCHAR(256)," +
-                COL_C + " INTEGER)"
+                COL_KEY + " VARCHAR(256)," +
+                COL_C + " INTEGER," +
+                COL_HOLD_TIME + " INTEGER)"
 
         val createTempTable2 = "CREATE TABLE " + TEMPTABLE2_NAME + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                COL_CHAR + " VARCHAR(256)," +
+                COL_KEYS + " VARCHAR(256)," +
                 COL_TIME + " INTEGER," +
                 COL_C + " INTEGER)"
 
         val createTempTable3 = "CREATE TABLE " + TEMPTABLE3_NAME + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                COL_CHAR + " VARCHAR(256)," +
+                COL_KEY + " VARCHAR(256)," +
                 COL_X + " REAL," +
                 COL_Y + " REAL," +
                 COL_C + " INTEGER)"
@@ -88,33 +93,32 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
     }
 
 
-    fun insertData1(character: String, count: Int, TableName: String) {
+    fun insertData1(character: String, temp_holdTime: Int, temp_count: Int, TableName: String) {
 
         val db = this.writableDatabase
-        val query = "Select * from " + TableName + " WHERE " + COL_CHAR + "=?"
+        val query = "Select * from " + TableName + " WHERE " + COL_KEY + "=?"
         val result = db.rawQuery(query, arrayOf(java.lang.String.valueOf(character)))
 
         if (result.moveToFirst()) {
             do {
+                var count = result.getInt(result.getColumnIndex(COL_C))
+                var holdTime = result.getInt(result.getColumnIndex(COL_HOLD_TIME))
                 var cv = ContentValues()
-                cv.put(
-                    COL_C, result.getInt(
-                        result.getColumnIndex(
-                            COL_C
-                        )
-                    ) + count
-                )
-                cv.put(COL_CHAR, character)
+
+                cv.put(COL_C, count + temp_count)
+                cv.put(COL_KEY, character)
+                cv.put(COL_HOLD_TIME, (holdTime * count + temp_holdTime * temp_count)/ (count + temp_count))
 
                 db.update(
-                    TableName, cv, COL_ID + "=? AND " + COL_CHAR + "=?",
+                    TableName, cv, COL_ID + "=? AND " + COL_KEY + "=?",
                     arrayOf(result.getString(result.getColumnIndex(COL_ID)), character)
                 )
             } while (result.moveToNext())
         } else {
             val cv = ContentValues()
-            cv.put(COL_CHAR, character)
-            cv.put(COL_C, count)
+            cv.put(COL_KEY, character)
+            cv.put(COL_C, temp_count)
+            cv.put(COL_HOLD_TIME, temp_holdTime)
             db.insert(TableName, null, cv)
         }
         result.close()
@@ -124,7 +128,7 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
     fun insertData2(characters: String, temp_time: Int, temp_count: Int, TableName: String) {
 
         val db = this.writableDatabase
-        val query = "Select * from " + TableName + " WHERE " + COL_CHAR + "=?"
+        val query = "Select * from " + TableName + " WHERE " + COL_KEYS + "=?"
         val result = db.rawQuery(query, arrayOf(java.lang.String.valueOf(characters)))
 
         if (result.moveToFirst()) {
@@ -144,7 +148,7 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
                 )
                 db.update(
                     TableName, cv,
-                    COL_ID + "=? AND " + COL_CHAR + "=?",
+                    COL_ID + "=? AND " + COL_KEYS + "=?",
                     arrayOf(result.getString(result.getColumnIndex(COL_ID)), characters)
                 )
 
@@ -152,7 +156,7 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
         } else {
             val cv = ContentValues()
             cv.put(COL_C, temp_count)
-            cv.put(COL_CHAR, characters)
+            cv.put(COL_KEYS, characters)
             cv.put(COL_TIME, temp_time)
             db.insert(TableName, null, cv)
         }
@@ -163,7 +167,7 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
     fun insertData3(character: String, temp_x: Float, temp_y: Float, temp_count: Int, TableName: String) {
 
         val db = this.writableDatabase
-        val query = "Select * from " + TableName + " WHERE " + COL_CHAR + "=?"
+        val query = "Select * from " + TableName + " WHERE " + COL_KEY + "=?"
         val result = db.rawQuery(query, arrayOf(java.lang.String.valueOf(character)))
         if (result.moveToFirst()) {
             do {
@@ -178,13 +182,13 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
                 )
 
                 db.update(
-                    TableName, cv, COL_ID + "=? AND " + COL_CHAR + "=?",
+                    TableName, cv, COL_ID + "=? AND " + COL_KEY + "=?",
                     arrayOf(result.getString(result.getColumnIndex(COL_ID)), character)
                 )
             } while (result.moveToNext())
         } else {
             val cv = ContentValues()
-            cv.put(COL_CHAR, character)
+            cv.put(COL_KEY, character)
             cv.put(COL_C, temp_count)
             cv.put(COL_X, df.format(temp_x))
             cv.put(COL_Y, df.format(temp_y))
@@ -198,7 +202,7 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
         var list: MutableList<Row> = ArrayList()
         val db = this.readableDatabase
 
-        val query = "Select * from " + TableName + " ORDER BY " + COL_CHAR
+        val query = "Select * from " + TableName + " ORDER BY " + COL_KEY
 
         val result = db.rawQuery(query, null)
 
@@ -206,7 +210,8 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
             do {
                 var row = Row()
                 row.id = result.getString(result.getColumnIndex(COL_ID)).toInt()
-                row.character = result.getString(result.getColumnIndex(COL_CHAR))
+                row.character = result.getString(result.getColumnIndex(COL_KEY))
+                row.holdTime = result.getString(result.getColumnIndex(COL_HOLD_TIME)).toInt()
                 row.count = result.getString(result.getColumnIndex(COL_C)).toInt()
                 list.add(row)
             } while (result.moveToNext())
@@ -222,14 +227,14 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
         var list: MutableList<Row2> = ArrayList()
         val db = this.readableDatabase
 
-        val query = "Select * from " + TableName + " ORDER BY " + COL_CHAR
+        val query = "Select * from " + TableName + " ORDER BY " + COL_KEYS
 
         val result = db.rawQuery(query, null)
         if (result.moveToFirst()) {
             do {
                 var row = Row2()
                 row.id = result.getString(result.getColumnIndex(COL_ID)).toInt()
-                row.characters = result.getString(result.getColumnIndex(COL_CHAR))
+                row.characters = result.getString(result.getColumnIndex(COL_KEYS))
                 row.time = result.getString(result.getColumnIndex(COL_TIME)).toInt()
                 row.count = result.getString(result.getColumnIndex(COL_C)).toInt()
                 list.add(row)
@@ -246,14 +251,14 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
         var list: MutableList<Row3> = ArrayList()
         val db = this.readableDatabase
 
-        val query = "Select * from " + TableName + " ORDER BY " + COL_CHAR
+        val query = "Select * from " + TableName + " ORDER BY " + COL_KEY
 
         val result = db.rawQuery(query, null)
         if (result.moveToFirst()) {
             do {
                 var row = Row3()
                 row.id = result.getString(result.getColumnIndex(COL_ID)).toInt()
-                row.character = result.getString(result.getColumnIndex(COL_CHAR))
+                row.character = result.getString(result.getColumnIndex(COL_KEY))
                 row.x = result.getString(result.getColumnIndex(COL_X)).toFloat()
                 row.y = result.getString(result.getColumnIndex(COL_Y)).toFloat()
                 row.count = result.getString(result.getColumnIndex(COL_C)).toInt()
@@ -286,8 +291,6 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
 
     fun transferTempData(){
 
-        var timeStart = System.currentTimeMillis()
-
         var db = this.readableDatabase
 
         var query = "Select * from " + TEMPTABLE1_NAME
@@ -298,9 +301,11 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
         if (result.moveToFirst()) {
             do {
                 row.id = result.getString(result.getColumnIndex(COL_ID)).toInt()
-                row.character = result.getString(result.getColumnIndex(COL_CHAR))
+                row.character = result.getString(result.getColumnIndex(COL_KEY))
                 row.count = result.getString(result.getColumnIndex(COL_C)).toInt()
-                insertData1(row.character, row.count, TABLE1_NAME)
+                row.holdTime = result.getInt(result.getColumnIndex(COL_HOLD_TIME))
+                Log.e("HOLDDDDDD TIMEEEEE: " , row.holdTime.toString())
+                insertData1(row.character, row.holdTime, row.count, TABLE1_NAME)
             } while (result.moveToNext())
         }
         result.close()
@@ -309,7 +314,7 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
         if (result2.moveToFirst()) {
             do {
                 row2.id = result2.getString(result2.getColumnIndex(COL_ID)).toInt()
-                row2.characters = result2.getString(result2.getColumnIndex(COL_CHAR))
+                row2.characters = result2.getString(result2.getColumnIndex(COL_KEYS))
                 row2.time = result2.getString(result2.getColumnIndex(COL_TIME)).toInt()
                 row2.count = result2.getString(result2.getColumnIndex(COL_C)).toInt()
 
@@ -322,7 +327,7 @@ class DataBaseHandler(context: Context?, name: String?, factory: SQLiteDatabase.
         if (result3.moveToFirst()) {
             do {
                 row3.id = result3.getString(result3.getColumnIndex(COL_ID)).toInt()
-                row3.character = result3.getString(result3.getColumnIndex(COL_CHAR))
+                row3.character = result3.getString(result3.getColumnIndex(COL_KEY))
                 row3.x = result3.getString(result3.getColumnIndex(COL_X)).toFloat()
                 row3.y = result3.getString(result3.getColumnIndex(COL_Y)).toFloat()
                 row3.count = result3.getString(result3.getColumnIndex(COL_C)).toInt()

@@ -29,17 +29,16 @@
             android:label="Keyboard Settings"
             android:parentActivityName=".MainActivity" />
         <activity
-            android:name=".activities.DatabaseActivity"
+            android:name=".activities.DBViewerActivity"
             android:label="DataBase"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".activities.TempDBViewerActivity"
             android:label="Temporary DataBase"
-            android:parentActivityName=".activities.DatabaseActivity" />
+            android:parentActivityName=".activities.DBViewerActivity" />
 
         <activity
             android:name=".SetupActivity"
-            android:noHistory="true"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

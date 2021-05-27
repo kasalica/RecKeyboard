@@ -1,16 +1,32 @@
 package com.example.reckeyboard.activities
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.example.reckeyboard.CustomRecKeyboard.Companion.count
 import com.example.reckeyboard.R
+import com.example.reckeyboard.database.DataBaseHandler
 import com.example.reckeyboard.database.*
+import kotlinx.android.synthetic.main.activity_dbviewer.*
+import kotlinx.android.synthetic.main.activity_dbviewer.btnRead1
+import kotlinx.android.synthetic.main.activity_dbviewer.btnRead2
+import kotlinx.android.synthetic.main.activity_dbviewer.btnRead3
+import kotlinx.android.synthetic.main.activity_dbviewer.column1
+import kotlinx.android.synthetic.main.activity_dbviewer.column1Label
+import kotlinx.android.synthetic.main.activity_dbviewer.column2
+import kotlinx.android.synthetic.main.activity_dbviewer.column2Label
+import kotlinx.android.synthetic.main.activity_dbviewer.column3
+import kotlinx.android.synthetic.main.activity_dbviewer.column3Label
+import kotlinx.android.synthetic.main.activity_dbviewer.column4
+import kotlinx.android.synthetic.main.activity_dbviewer.column4Label
 import kotlinx.android.synthetic.main.activity_temp_dbviewer.*
 
-class TempDBViewerActivity : AppCompatActivity() {
+
+class DBViewerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_temp_dbviewer)
+        setContentView(R.layout.activity_dbviewer)
 
         val context = this
         var db = DataBaseHandler(
@@ -20,13 +36,8 @@ class TempDBViewerActivity : AppCompatActivity() {
             1
         )
 
-        btnDeleteTempDB.setOnClickListener{
-            db.deleteTempData()
-            btnRead1.performClick()
-        }
-
         btnRead1.setOnClickListener {
-            var data = db.readData1(TEMPTABLE1_NAME)
+            var data = db.readData1(TABLE1_NAME)
             column1Label.text = COL_KEY
             column2Label.text = COL_HOLD_TIME
             column3Label.text = ""
@@ -43,7 +54,7 @@ class TempDBViewerActivity : AppCompatActivity() {
             }
         }
         btnRead2.setOnClickListener {
-            var data = db.readData3(TEMPTABLE3_NAME)
+            var data = db.readData3(TABLE3_NAME)
             column1Label.text = COL_KEY
             column2Label.text = COL_X
             column3Label.text = COL_Y
@@ -61,7 +72,7 @@ class TempDBViewerActivity : AppCompatActivity() {
         }
 
         btnRead3.setOnClickListener {
-            var data = db.readData2(TEMPTABLE2_NAME)
+            var data = db.readData2(TABLE2_NAME)
             column1Label.text = COL_KEYS
             column2Label.text = COL_TIME
             column3Label.text = ""
@@ -76,6 +87,17 @@ class TempDBViewerActivity : AppCompatActivity() {
                 column3.append("\n")
                 column4.append(data.get(i).count.toString() + "\n")
             }
+        }
+
+        btnDeleteDB.setOnClickListener {
+            db.deleteData()
+            btnRead1.performClick()
+        }
+
+        btnTempDB.setOnClickListener {
+            val intent = Intent(this, TempDBViewerActivity::class.java)
+            startActivity(intent)
+            count = 0
         }
 
     }

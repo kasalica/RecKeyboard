@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageButton
-import android.widget.Toast
 import com.example.reckeyboard.activities.*
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +21,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         btnDatabase.setOnClickListener {
-            intent = Intent(this, DatabaseActivity::class.java)
+            intent = Intent(this, DBViewerActivity::class.java)
             startActivity(intent)
         }
         btnHelp.setOnClickListener {

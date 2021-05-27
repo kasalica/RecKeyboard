@@ -29,6 +29,8 @@ class CustomRecKeyboard : InputMethodService(), OnKeyboardActionListener {
 
     var pastkey = ""
     var time = 0.toLong()
+    var holdTime = 0.toLong()
+    var pressure : Float = 0F
 
     fun retrieveKeys() {
         keyList = kv!!.keyboard.keys
@@ -92,9 +94,16 @@ class CustomRecKeyboard : InputMethodService(), OnKeyboardActionListener {
             retrieveKeys()
             for (k in keyList!!) {
 
+                if (event.action == MotionEvent.ACTION_DOWN){
+                    holdTime = System.currentTimeMillis()
+                }
+
                 if (event.action == MotionEvent.ACTION_UP) {
                     // If the coordinates from the Motion event are inside of the key
                     if (k.isInside(event.x.toInt(), event.y.toInt())) {
+
+                        holdTime = System.currentTimeMillis() - holdTime
+
                         // k is the key pressed
                         var centreX: Float
                         var centreY: Float
@@ -104,12 +113,12 @@ class CustomRecKeyboard : InputMethodService(), OnKeyboardActionListener {
                         centreY = k.height / 2 + k.y.toFloat()
 
                         //saveing data in temporary tables
-                        myDB.insertData1(k.label.toString(), 1 , TEMPTABLE1_NAME)
+                        myDB.insertData1(k.label.toString(), holdTime.toInt(), 1 , TEMPTABLE1_NAME)
 
                         if(pastkey!="") {
                             time = System.currentTimeMillis() - time
                             if (time < 2000)
-                            myDB.insertData2(pastkey + k.label.toString(), time.toInt(), 1, TEMPTABLE2_NAME)
+                            myDB.insertData2(pastkey + " " + k.label.toString(), time.toInt(), 1, TEMPTABLE2_NAME)
 
                         }
                         //we count press coordinates, not release!!!
@@ -146,7 +155,7 @@ class CustomRecKeyboard : InputMethodService(), OnKeyboardActionListener {
                                 requestHideSelf(0)
                                 Toast.makeText(
                                     applicationContext,
-                                    "You are not Vu!",
+                                    "You are an IMPOSTOR!!!",
                                     Toast.LENGTH_LONG
                                 ).show()
                                 count = 0
